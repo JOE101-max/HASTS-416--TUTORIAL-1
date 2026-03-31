@@ -2,9 +2,6 @@
 R solutions for HASTS 416 Tutorial 1 on Markov chains, including chain diagrams, trajectory simulations, steady-state analysis, limiting behavior, and traffic-state modeling.
 # HASTS 416 Tutorial 1 in R
 
-
-## Topics Covered
-
 ### Question A1: 5-State Markov Chain
 - Plotting the Markov chain diagram
 - Identifying communicating classes
@@ -32,10 +29,4 @@ R solutions for HASTS 416 Tutorial 1 on Markov chains, including chain diagrams,
 - Computing the distribution of traffic states at 6 PM
 - Verifying the analytical result using **10,000 simulations**
 
-## Important Note
 
-For **Question A3**, the lecturer clarified that in the **second row of the first transition matrix**, the entry **0.5 should be replaced with 0.4**.  
-So the corrected row used in this repository is:
-
-```text
-0.3  0.4  0.3
