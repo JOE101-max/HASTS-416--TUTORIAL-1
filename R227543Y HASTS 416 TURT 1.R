@@ -1,11 +1,8 @@
 # =============================================================================
-# HASTS 416 — Stochastic Processes | Tutorial 1
-# Fully corrected script for A1, A2 and A3
-# Plots render in the normal R / RStudio Plots pane
-
-#Bynadge J JAKARASI
-#R227543Y
-#HDSC
+# HASTS 416 — Tutorial 1 Solutions in R
+# Bynadge J. Jakarasi
+# R227543Y
+# HDSC
 
 # =============================================================================
 
@@ -25,13 +22,13 @@ set.seed(2024)
 # -----------------------------------------------------------------------------
 # 1. Colours and theme
 # -----------------------------------------------------------------------------
-BLUE   <- "#2166AC"
-ORANGE <- "#E08214"
-PURPLE <- "#762A83"
-RED    <- "#D6604D"
-GREEN  <- "#4DAC26"
-TEAL   <- "#35978F"
-GREY   <- "#5F6368"
+NAVY   <- "#1F3A5F"
+CORAL  <- "#E76F51"
+PLUM   <- "#8E5EA2"
+ROSE   <- "#C8557D"
+MINT   <- "#2A9D8F"
+GOLD   <- "#D4A017"
+SLATE  <- "#5C677D"
 
 base_theme <- theme_classic(base_size = 13) +
   theme(
@@ -78,11 +75,46 @@ uncond_probs <- function(P, pi0, N) {
   out
 }
 
+
+draw_mc <- function(P, labels, main, v_colors,
+                    layout_fn = igraph::layout_in_circle,
+                    curve = 0.25, vsize = 30) {
+  g <- igraph::graph_from_adjacency_matrix(
+    P, mode = "directed", weighted = TRUE, diag = TRUE
+  )
+
+  igraph::V(g)$name  <- labels
+  igraph::E(g)$label <- sprintf("%.2f", igraph::E(g)$weight)
+  igraph::V(g)$color <- v_colors
+
+  lo <- if (is.function(layout_fn)) layout_fn(g) else layout_fn
+
+  par(mar = c(1, 1, 3.5, 1), bg = "white")
+  plot(g,
+       layout             = lo,
+       vertex.color       = igraph::V(g)$color,
+       vertex.frame.color = "white",
+       vertex.label       = labels,
+       vertex.label.color = "white",
+       vertex.label.cex   = 0.88,
+       vertex.label.font  = 2,
+       vertex.size        = vsize,
+       edge.label         = igraph::E(g)$label,
+       edge.label.cex     = 0.70,
+       edge.label.color   = "grey15",
+       edge.curved        = curve,
+       edge.arrow.size    = 0.45,
+       edge.color         = "grey35",
+       edge.width         = 1.5,
+       main               = main,
+       cex.main           = 1.25)
+}
+
 # =============================================================================
 # A1
 # =============================================================================
 cat(strrep("=", 78), "\n")
-cat("A1 — 5-State Markov Chain\n")
+cat("A1 — Analysis of the 5-State Markov Chain\n")
 cat(strrep("=", 78), "\n\n")
 
 P_A1 <- matrix(c(
@@ -119,13 +151,13 @@ cat("─── A1(a): Markov Chain Diagram & Classification ──────�
 #   S3, S4, S5  → period = 3  (gcd{n ≥ 1 : Pⁿ(i,i) > 0} = gcd{3,6,9,...} = 3)
 
 # Colours: blue = recurrent/absorbing, orange = transient
-vcol_A1 <- c(BLUE, ORANGE, ORANGE, ORANGE, ORANGE)
+vcol_A1 <- c(NAVY, CORAL, CORAL, CORAL, CORAL)
 
 dev.new(width = 7, height = 6, noRStudioGD = TRUE)
-draw_mc(P_A1, s1, "A1(a): 5-State Markov Chain", vcol_A1)
+draw_mc(P_A1, states_A1, "A1(a): 5-State Markov Chain", vcol_A1)
 legend("bottomright",
        legend = c("Recurrent (Absorbing)", "Transient"),
-       fill   = c(BLUE, ORANGE),
+       fill   = c(NAVY, CORAL),
        border = "white", bty = "n", cex = 0.88)
 
 cat("Communicating classes:\n")
@@ -146,7 +178,7 @@ cat("  S3, S4, S5  → period = 3  (shortest return loop: S3→S5→S4→S3)\n")
 # A1(b)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A1(b) — Three simulated trajectories\n")
+cat("A1(b) — Simulation of Three Trajectories\n")
 cat(strrep("-", 78), "\n\n")
 
 N_steps_A1 <- 35
@@ -167,12 +199,12 @@ traj_df_A1 <- do.call(rbind, lapply(seq_along(starts_A1), function(i) {
   )
 }))
 
-traj_cols_A1 <- setNames(c(BLUE, RED, GREEN), levels(traj_df_A1$Label))
+traj_cols_A1 <- setNames(c(NAVY, ROSE, MINT), levels(traj_df_A1$Label))
 
 p_A1b <- ggplot(traj_df_A1, aes(x = Step, y = State, colour = Label, group = Label)) +
   geom_step(linewidth = 1.15) +
   geom_point(size = 2.0, alpha = 0.88) +
-  geom_hline(yintercept = 1, linetype = "dashed", colour = BLUE, alpha = 0.30) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = NAVY, alpha = 0.30) +
   scale_colour_manual(values = traj_cols_A1, name = NULL) +
   scale_y_continuous(breaks = 1:5, labels = states_A1, expand = expansion(add = 0.35)) +
   scale_x_continuous(breaks = seq(0, N_steps_A1, 5)) +
@@ -194,7 +226,7 @@ cat("  Before absorption, some paths may move through the transient cycle involv
 # A1(c)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A1(c) — Steady-state probabilities and ergodicity\n")
+cat("A1(c) — Steady-State Probabilities and Ergodicity\n")
 cat(strrep("-", 78), "\n\n")
 
 ss_A1 <- steadyStates(mc_A1)
@@ -210,7 +242,7 @@ cat("  The chain is NOT ergodic because it is not irreducible and contains trans
 # A1(d)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A1(d) — Unconditional probabilities over time\n")
+cat("A1(d) — Unconditional Probabilities Over Time\n")
 cat(strrep("-", 78), "\n\n")
 
 N_d_A1 <- 45
@@ -225,13 +257,13 @@ df_A1d <- reshape2::melt(
 )
 
 end_df_A1 <- subset(df_A1d, n == N_d_A1)
-cols_A1 <- c("S1" = BLUE, "S2" = RED, "S3" = GREEN, "S4" = ORANGE, "S5" = PURPLE)
+cols_A1 <- c("S1" = NAVY, "S2" = ROSE, "S3" = MINT, "S4" = CORAL, "S5" = PLUM)
 
 p_A1d <- ggplot(df_A1d, aes(x = n, y = Probability, colour = State)) +
   geom_line(linewidth = 1.1) +
-  geom_hline(yintercept = 1, linetype = "dashed", colour = BLUE, linewidth = 0.7, alpha = 0.6) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = NAVY, linewidth = 0.7, alpha = 0.6) +
   annotate("text", x = N_d_A1 - 2, y = 1.03, label = "π = 1 for S1",
-           colour = BLUE, size = 4, hjust = 1, fontface = "italic") +
+           colour = NAVY, size = 4, hjust = 1, fontface = "italic") +
   ggrepel::geom_label_repel(
     data = end_df_A1,
     aes(label = State),
@@ -263,7 +295,7 @@ cat("  Convergence is fairly fast: by about 20 to 25 steps, the unconditional pr
 # A2
 # =============================================================================
 cat(strrep("=", 78), "\n")
-cat("A2 — 7-State Markov Chain\n")
+cat("A2 — Analysis of the 7-State Markov Chain\n")
 cat(strrep("=", 78), "\n\n")
 
 P_A2 <- matrix(c(
@@ -301,26 +333,26 @@ lo_A2 <- matrix(c(
 ), ncol = 2, byrow = TRUE)
 
 # Colours:
-#   {S1, S2} → BLUE   (recurrent, period 2)
-#   {S3}     → PURPLE (transient singleton)
-#   {S4–S7}  → ORANGE (transient communicating class)
-vcol_A2 <- c(BLUE, BLUE, PURPLE, ORANGE, ORANGE, ORANGE, ORANGE)
+#   {S1, S2} → NAVY   (recurrent, period 2)
+#   {S3}     → PLUM (transient singleton)
+#   {S4–S7}  → CORAL (transient communicating class)
+vcol_A2 <- c(NAVY, NAVY, PLUM, CORAL, CORAL, CORAL, CORAL)
 
 dev.new(width = 8, height = 7, noRStudioGD = TRUE)
-draw_mc(P_A2, s2, "A2(a): 7-State Markov Chain", vcol_A2,
+draw_mc(P_A2, states_A2, "A2(a): 7-State Markov Chain", vcol_A2,
         layout_fn = lo_A2, curve = 0.28, vsize = 26)
 legend("bottomright",
        legend = c("Recurrent {S1,S2}  —  period 2",
                   "Transient singleton {S3}",
                   "Transient class {S4,S5,S6,S7}"),
-       fill   = c(BLUE, PURPLE, ORANGE),
+       fill   = c(NAVY, PLUM, CORAL),
        border = "white", bty = "n", cex = 0.82)
 
 # -----------------------------------------------------------------------------
 # A2(b)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A2(b) — Classification and period analysis\n")
+cat("A2(b) — Classification and Period Analysis\n")
 cat(strrep("-", 78), "\n\n")
 
 cat("Communicating classes:\n")
@@ -376,8 +408,8 @@ traj_df2 <- do.call(rbind, traj_list2)
 p2c <- ggplot(traj_df2, aes(Step, State, colour = Traj, group = Traj)) +
   geom_step(linewidth = 0.85) +
   geom_point(size = 1.8, alpha = 0.78) +
-  scale_colour_manual(values = c(BLUE, RED), name = NULL) +
-  scale_y_continuous(breaks = 1:7, labels = s2) +
+  scale_colour_manual(values = c(NAVY, ROSE), name = NULL) +
+  scale_y_continuous(breaks = 1:7, labels = states_A2) +
   labs(
     title    = "A2(c): Two Simulated Trajectories — 7-State Chain",
     subtitle = "Each trajectory begins at a randomly selected state",
@@ -400,7 +432,7 @@ cat("The length of the transient phase depends on the starting state.\n")
 # A2(d)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A2(d) — Limiting / stationary probabilities\n")
+cat("A2(d) — Limiting and Stationary Probabilities\n")
 cat(strrep("-", 78), "\n\n")
 
 ss_A2 <- steadyStates(mc_A2)
@@ -423,12 +455,12 @@ df_A2d <- reshape2::melt(
 )
 
 end_df_A2 <- subset(df_A2d, n == N_d_A2)
-cols_A2 <- c("S1" = BLUE, "S2" = RED, "S3" = PURPLE, "S4" = ORANGE, "S5" = GREEN, "S6" = TEAL, "S7" = GREY)
+cols_A2 <- c("S1" = NAVY, "S2" = ROSE, "S3" = PLUM, "S4" = CORAL, "S5" = MINT, "S6" = GOLD, "S7" = SLATE)
 
 p_A2d <- ggplot(df_A2d, aes(x = n, y = Probability, colour = State)) +
-  annotate("rect", xmin = 0, xmax = 28, ymin = -0.005, ymax = 0.18, fill = ORANGE, alpha = 0.06) +
+  annotate("rect", xmin = 0, xmax = 28, ymin = -0.005, ymax = 0.18, fill = CORAL, alpha = 0.06) +
   annotate("text", x = 19, y = 0.13, label = "Transient decay zone",
-           colour = ORANGE, size = 3.6, fontface = "italic") +
+           colour = CORAL, size = 3.6, fontface = "italic") +
   geom_line(linewidth = 1.05) +
   geom_hline(yintercept = 0.5, linetype = "dashed", colour = "grey40", linewidth = 0.65) +
   annotate("text", x = 4, y = 0.515, label = "0.5 reference",
@@ -466,7 +498,7 @@ cat("  The chain is not ergodic.\n\n")
 # A3
 # =============================================================================
 cat(strrep("=", 78), "\n")
-cat("A3 — Time-dependent traffic Markov chain\n")
+cat("A3 — Time-Dependent Traffic Markov Chain\n")
 cat(strrep("=", 78), "\n\n")
 
 # Corrected first matrix: second row must sum to 1
@@ -490,7 +522,7 @@ rownames(P2_A3) <- colnames(P2_A3) <- traffic_states
 # A3(a)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A3(a) — Distribution at 6 PM\n")
+cat("A3(a) — State Distribution at 6 PM\n")
 cat(strrep("-", 78), "\n\n")
 
 initial_A3 <- c(1, 0, 0)
@@ -507,7 +539,7 @@ cat(sprintf("P(Jammed at 6 PM) = %.6f\n\n", dist_6pm[3]))
 # A3(b)
 # -----------------------------------------------------------------------------
 cat(strrep("-", 78), "\n")
-cat("A3(b) — Simulation verification with 10,000 trajectories\n")
+cat("A3(b) — Simulation Check with 10,000 Trajectories\n")
 cat(strrep("-", 78), "\n\n")
 
 set.seed(789)
@@ -566,9 +598,9 @@ df_A3_long <- reshape2::melt(df_A3, id.vars = c("Step", "Time"),
 p_A3_1 <- ggplot(df_A3_long, aes(x = Step, y = Probability, colour = State, group = State)) +
   geom_line(linewidth = 1.1) +
   geom_point(size = 2) +
-  geom_vline(xintercept = 10, linetype = "dashed", colour = BLUE) +
-  annotate("text", x = 10.3, y = 0.92, label = "4 PM:\nP1 → P2", colour = BLUE, hjust = 0) +
-  scale_colour_manual(values = c("Light" = GREEN, "Heavy" = ORANGE, "Jammed" = RED)) +
+  geom_vline(xintercept = 10, linetype = "dashed", colour = NAVY) +
+  annotate("text", x = 10.3, y = 0.92, label = "4 PM:\nP1 → P2", colour = NAVY, hjust = 0) +
+  scale_colour_manual(values = c("Light" = MINT, "Heavy" = CORAL, "Jammed" = ROSE)) +
   scale_x_continuous(breaks = 1:16, labels = df_A3$Time) +
   labs(
     title = "A3: Traffic State Distribution Over Time",
@@ -591,7 +623,7 @@ bar_df_A3_long <- reshape2::melt(bar_df_A3, id.vars = "State",
 p_A3_2 <- ggplot(bar_df_A3_long, aes(x = State, y = Probability, fill = State)) +
   geom_col(position = "dodge") +
   facet_wrap(~Method) +
-  scale_fill_manual(values = c("Light" = GREEN, "Heavy" = ORANGE, "Jammed" = RED)) +
+  scale_fill_manual(values = c("Light" = MINT, "Heavy" = CORAL, "Jammed" = ROSE)) +
   labs(
     title = "A3: Analytical vs Simulation Results at 6 PM",
     x = "State",
